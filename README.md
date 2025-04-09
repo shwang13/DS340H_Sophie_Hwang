@@ -6,8 +6,10 @@ Main files
 -
 bluebike_weekly.csv
 - finalized cleaned dataset
+
 capstone-meteostat.ipynb
 - Code for scraping weather data 
+
 capstone-data cleaning.R
 - Code for cleaning and merging data, resulting in bluebike_weekly.csv
 
