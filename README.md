@@ -7,7 +7,7 @@ Cleaned Data file
 bluebike_weekly.csv
 - finalized cleaned dataset
 
-Data folder
+Analysis & Code files 
 -
 capstone-meteostat.ipynb
 - Code for scraping weather data 
