@@ -162,7 +162,7 @@ aic2.fit <- lm(count_per_week ~ gas_price + new_covid_cases + tavg +
                  tavg:season + gas_price:season + tavg:month + gas_price:new_covid_cases, 
                data=bluebike_weekly)
 par(mfrow=c(2,2))
-plot(bic2.fit)
+plot(aic2.fit)
 
 #eliminating repeating outliers
 bluebike_weekly <- bluebike_weekly[-c(140,142,195),]
