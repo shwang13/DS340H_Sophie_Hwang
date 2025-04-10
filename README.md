@@ -23,10 +23,3 @@ Blue Bikes trips (Summer 2023)
 
 
 
-
-GoogleMapsPaths folder
--
-Can read these in instead of rescraping
-
-- bikeStation_bikeStation_dist_dict.json: JSON of walking time from each bike station to the other
-- bikeStation_TStation_dict.json: JSON of walking time from each bike station to each T station
