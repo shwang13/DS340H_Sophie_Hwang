@@ -21,5 +21,8 @@ capstone-visualization.ipynb
 capstone-data analysis.R
 - Analysis code for fitting linear regression & SVR models 
 
-
+Poster  
+-
+Poster DS340H_Hwang.pdf
+- PDF of poster 
 
