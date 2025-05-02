@@ -64,7 +64,9 @@ bic <- step(lm.obj, k=log(n), direction="both", trace=FALSE)
 summary(bic)
 
 #yields the same first-order model 
-CV.score.fo <- 0
+CV.SSE.fo <- 0
+CV.pred.fo <- rep(NA, nrow(bluebike_weekly))
+
 for(i in 1:K)
 {
   #fit the full model based on the data excluding the ith fold
@@ -72,10 +74,18 @@ for(i in 1:K)
             data=bluebike_weekly[-index.fold[[i]],])
   #make prediction on each observation in the ith fold
   pred <- predict(fit,bluebike_weekly[index.fold[[i]],])
+  CV.pred.fo[index.fold[[i]]] <- pred
   #compute average squared error for the ith fold
-  CV.score.fo <- CV.score.fo+(1/n)*sum((bluebike_weekly$count_per_week[index.fold[[i]]]-pred)^2)
+  #CV.score.fo <- CV.score.fo+(1/n)*sum((bluebike_weekly$count_per_week[index.fold[[i]]]-pred)^2)
 }
-sqrt(CV.score.fo)
+CV.SSE.fo <- sum((bluebike_weekly$count_per_week - CV.pred.fo)^2)
+CV.SST.fo <- sum((bluebike_weekly$count_per_week - mean(bluebike_weekly$count_per_week))^2)
+CV.RMSE.fo <- sqrt(CV.SSE.fo / nrow(bluebike_weekly))
+CV.RMSE.fo
+
+CV.R2.fo <- 1 - CV.SSE.fo / CV.SST.fo
+CV.R2.fo
+
 AIC(bic)
 BIC(bic)
 
@@ -86,7 +96,10 @@ aic.2 <- step(lm.obj, .~.^2, direction="both", k=2)
 # tavg:season + gas_price:season + tavg:month + gas_price:new_covid_cases
 summary(aic.2)
 
-CV.score.ho <- 0
+
+CV.SSE.ho <- 0
+CV.pred.ho <- rep(NA, nrow(bluebike_weekly))
+
 for(i in 1:K)
 {
   #fit the full model based on the data excluding the ith fold
@@ -96,10 +109,19 @@ for(i in 1:K)
             data=bluebike_weekly[-index.fold[[i]],])
   #make prediction on each observation in the ith fold
   pred <- predict(fit,bluebike_weekly[index.fold[[i]],])
+  CV.pred.ho[index.fold[[i]]] <- pred
   #compute average squared error for the ith fold
-  CV.score.ho <- CV.score.ho+(1/n)*sum((bluebike_weekly$count_per_week[index.fold[[i]]]-pred)^2)
+  #CV.score.ho <- CV.score.ho+(1/n)*sum((bluebike_weekly$count_per_week[index.fold[[i]]]-pred)^2)
 }
-sqrt(CV.score.ho)
+
+CV.SSE.ho <- sum((bluebike_weekly$count_per_week - CV.pred.ho)^2)
+CV.SST.ho <- sum((bluebike_weekly$count_per_week - mean(bluebike_weekly$count_per_week))^2)
+CV.RMSE.ho <- sqrt(CV.SSE.ho / nrow(bluebike_weekly))
+CV.RMSE.ho
+
+CV.R2.ho <- 1 - CV.SSE.ho / CV.SST.ho
+CV.R2.ho
+
 AIC(aic.2)
 BIC(aic.2)
 
@@ -110,7 +132,9 @@ bic.2 <- step(lm.obj, .~.^2, direction="both", k=log(n))
 # tavg:season + gas_price:tavg
 summary(bic.2)
 
-CV.score.ho2 <- 0
+CV.SSE.ho2 <- 0
+CV.pred.ho2 <- rep(NA, nrow(bluebike_weekly))
+
 for(i in 1:K)
 {
   #fit the full model based on the data excluding the ith fold
@@ -120,10 +144,18 @@ for(i in 1:K)
             data=bluebike_weekly[-index.fold[[i]],])
   #make prediction on each observation in the ith fold
   pred <- predict(fit,bluebike_weekly[index.fold[[i]],])
+  CV.pred.ho2[index.fold[[i]]] <- pred
   #compute average squared error for the ith fold
-  CV.score.ho2 <- CV.score.ho2+(1/n)*sum((bluebike_weekly$count_per_week[index.fold[[i]]]-pred)^2)
+  #CV.score.ho2 <- CV.score.ho2+(1/n)*sum((bluebike_weekly$count_per_week[index.fold[[i]]]-pred)^2)
 }
-sqrt(CV.score.ho2)
+CV.SSE.ho2 <- sum((bluebike_weekly$count_per_week - CV.pred.ho2)^2)
+CV.SST.ho2 <- sum((bluebike_weekly$count_per_week - mean(bluebike_weekly$count_per_week))^2)
+CV.RMSE.ho2 <- sqrt(CV.SSE.ho2 / nrow(bluebike_weekly))
+CV.RMSE.ho2
+
+CV.R2.ho2 <- 1 - CV.SSE.ho2 / CV.SST.ho2
+CV.R2.ho2
+
 AIC(bic.2)
 BIC(bic.2)
 
@@ -135,6 +167,7 @@ anova(aic, bic.2)
 library(e1071)
 bw$count_per_week <- as.numeric(bw$count_per_week)
 
+#cost tuning showed similar # of support vectors 
 svm.fit <- svm(formula=count_per_week~., data=bw, type="eps-regression", 
                kernel="linear", cost=1)
 summary(svm.fit)
@@ -157,18 +190,18 @@ sqrt(CV.score.svm)
 
 ## CONCLUSION-----------
 
-aic2.fit <- lm(count_per_week ~ gas_price + new_covid_cases + tavg + 
+bic2.fit <- lm(count_per_week ~ gas_price + new_covid_cases + tavg + 
                  prcp + month + season + month:season + new_covid_cases:season + 
-                 tavg:season + gas_price:season + tavg:month + gas_price:new_covid_cases, 
-               data=bluebike_weekly)
+                 tavg:season + gas_price:tavg, data = bluebike_weekly)
 par(mfrow=c(2,2))
-plot(aic2.fit)
+plot(bic2.fit)
 
 #eliminating repeating outliers
 bluebike_weekly <- bluebike_weekly[-c(140,142,195),]
 fit.final <- lm(count_per_week ~ gas_price + new_covid_cases + tavg + 
-                 prcp + month + season + month:season + new_covid_cases:season +
-                 tavg:season + gas_price:tavg, data=bluebike_weekly)
+                  prcp + month + season + month:season + new_covid_cases:season + 
+                  tavg:season + gas_price:tavg, 
+                data=bluebike_weekly)
 par(mfrow=c(2,2))
 plot(fit.final)
 
